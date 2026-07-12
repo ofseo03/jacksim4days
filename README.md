@@ -39,8 +39,9 @@
 - TailwindCSS v4 (커스텀 디자인 토큰)
 - Framer Motion (Apple 수준의 부드러운 이징)
 - Lucide Icons
-- Pretendard Variable (셀프호스팅, `next/font/local`)
-- 데이터: 브라우저 `localStorage` (개인정보 수집 없음 — Supabase/Prisma로 확장 가능한 스토어 구조)
+- Pretendard Variable (셀프호스팅, `next/font/local`) + Noto Serif KR (브랜드 타이포)
+- 데이터: 오프라인 우선 — `localStorage`가 즉시 반응하고, Supabase가 설정되면 서버에 동기화
+- PWA: 홈 화면 추가 지원 (manifest + 아이콘)
 
 ## 시작하기
 
@@ -57,7 +58,30 @@ npm run start   # 프로덕션 서버
 npm run lint    # ESLint
 ```
 
-Vercel에 바로 배포할 수 있습니다 (별도 환경 변수 불필요).
+환경 변수 없이도 **로컬 전용 모드**로 완전히 동작합니다. Vercel에 바로 배포 가능.
+
+## Supabase 동기화 켜기 (선택)
+
+1. [supabase.com](https://supabase.com)에서 프로젝트 생성
+2. SQL Editor에서 `supabase/migrations/0001_init.sql` 실행
+3. **Authentication → Sign In / Up → Allow anonymous sign-ins** 활성화
+4. `.env.local`에 키 입력 (`.env.example` 참고):
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+```
+
+### 동기화 설계
+
+- **`habit_logs`만이 진실**입니다. 재시작 횟수·복귀율·성공한 날은 컬럼으로 저장하지 않고
+  로그에서 파생합니다 (SQL 정의: `habit_stats()` 함수, 클라이언트 정의: `src/lib/stats.ts`).
+- `(habit_id, log_date)` 복합 PK + upsert라 같은 체크가 중복 전송돼도 멱등입니다.
+- 첫 진입 시 **익명 로그인**(`signInAnonymously`)으로 가입 벽 없이 시작하고,
+  나중에 이메일/소셜을 연결해도 같은 `user_id`가 유지됩니다.
+- 쓰기는 낙관적으로 로컬에 먼저 반영되고 큐(`src/lib/sync-queue.ts`)에 쌓여
+  오프라인이어도 유실 없이, 재연결 시 자동으로 서버에 반영됩니다.
+- 기존 localStorage 사용자는 첫 로그인 때 기록이 자동으로 서버에 업로드됩니다(양방향 병합).
 
 ## 페이지 구성
 

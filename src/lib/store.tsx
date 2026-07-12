@@ -3,6 +3,7 @@
 import { useMemo, useSyncExternalStore, type ReactNode } from "react";
 import { todayISO } from "./dates";
 import { demoCompletions, willBeRestart } from "./stats";
+import { enqueue, habitToRow } from "./sync-queue";
 import type { AppSettings, AppState, Habit, HabitCategory, Profile } from "./types";
 
 const KEY = "jaksim4.state.v1";
@@ -74,9 +75,18 @@ function setState(updater: (s: AppState) => AppState) {
   emit();
 }
 
+/** 서버(uuid pk)와 그대로 호환되도록 습관 ID는 UUID를 쓴다. */
 function newId(): string {
-  return `h_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(16)}-0000-4000-8000-${Math.random()
+    .toString(16)
+    .slice(2, 14)
+    .padEnd(12, "0")}`;
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export interface CompleteResult {
   isRestart: boolean;
@@ -94,31 +104,42 @@ function addHabit(input: { name: string; emoji: string; category: HabitCategory 
     completions: [],
   };
   setState((s) => ({ ...s, habits: [...s.habits, habit] }));
+  enqueue({ t: "habit_upsert", habit: habitToRow(habit) });
   return habit;
 }
 
 function removeHabit(id: string) {
   setState((s) => ({ ...s, habits: s.habits.filter((h) => h.id !== id) }));
+  enqueue({ t: "habit_delete", id });
 }
 
 function archiveHabit(id: string, archived: boolean) {
+  let changed: Habit | undefined;
   setState((s) => ({
     ...s,
-    habits: s.habits.map((h) => (h.id === id ? { ...h, archived } : h)),
+    habits: s.habits.map((h) => {
+      if (h.id !== id) return h;
+      changed = { ...h, archived };
+      return changed;
+    }),
   }));
+  if (changed) enqueue({ t: "habit_upsert", habit: habitToRow(changed) });
 }
 
 function completeToday(id: string): CompleteResult {
   const today = todayISO();
   let isRestart = false;
+  let added = false;
   setState((s) => {
     const habits = s.habits.map((h) => {
       if (h.id !== id || h.completions.includes(today)) return h;
       isRestart = willBeRestart(h, today);
+      added = true;
       return { ...h, completions: [...h.completions, today] };
     });
     return { ...s, habits };
   });
+  if (added) enqueue({ t: "log_upsert", habitId: id, date: today });
   return { isRestart };
 }
 
@@ -130,6 +151,7 @@ function uncompleteToday(id: string) {
       h.id === id ? { ...h, completions: h.completions.filter((d) => d !== today) } : h
     ),
   }));
+  enqueue({ t: "log_delete", habitId: id, date: today });
 }
 
 function setProfile(profile: Profile) {
@@ -141,12 +163,15 @@ function updateSettings(patch: Partial<AppSettings>) {
 }
 
 function completeOnboarding(profile: Profile, habits: Habit[]) {
+  // 온보딩에서 만든 습관은 uuid가 아닐 수 있으므로 서버 호환 ID로 재발급한다.
+  const withIds = habits.map((h) => (UUID_RE.test(h.id) ? h : { ...h, id: newId() }));
   setState((s) => ({
     ...s,
     onboarded: true,
     profile,
-    habits: [...s.habits, ...habits],
+    habits: [...s.habits, ...withIds],
   }));
+  enqueue(...withIds.map((h) => ({ t: "habit_upsert" as const, habit: habitToRow(h) })));
 }
 
 function loadDemoData() {
@@ -215,15 +240,24 @@ function loadDemoData() {
       ]),
     },
   ];
+  const removed = snapshot.state.habits;
   setState((s) => ({
     ...s,
     onboarded: true,
     profile: s.profile ?? { name: "체험자", joinedAt: today, goal: "다시 시작하는 연습" },
     habits: demo,
   }));
+  enqueue(
+    ...removed.map((h) => ({ t: "habit_delete" as const, id: h.id })),
+    ...demo.map((h) => ({ t: "habit_upsert" as const, habit: habitToRow(h) })),
+    ...demo.flatMap((h) =>
+      h.completions.map((d) => ({ t: "log_upsert" as const, habitId: h.id, date: d }))
+    )
+  );
 }
 
 function resetAll() {
+  const removed = snapshot.state.habits;
   snapshot = { hydrated: true, state: DEFAULT_STATE };
   try {
     localStorage.removeItem(KEY);
@@ -231,6 +265,8 @@ function resetAll() {
     // ignore
   }
   emit();
+  // 서버 기록도 함께 삭제 — 남겨두면 다음 부팅 때 다시 내려와 초기화가 무효가 된다
+  enqueue(...removed.map((h) => ({ t: "habit_delete" as const, id: h.id })));
 }
 
 function demoStart(daysAgo: number): string {
@@ -240,6 +276,54 @@ function demoStart(daysAgo: number): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+/* ---------- 동기화(리컨실) 전용 내부 API — sync.ts에서만 사용 ---------- */
+
+export function getStoreState(): AppState {
+  return snapshot.state;
+}
+
+/** 동기화가 스토어보다 먼저 돌 때를 대비해 명시적으로 하이드레이션을 보장한다. */
+export function hydrateStore(): void {
+  hydrate();
+}
+
+/**
+ * 구버전 로컬 ID(h_...)를 서버 호환 UUID로 재발급한다.
+ * localStorage 마이그레이션 1회용 — 이미 uuid면 건드리지 않는다.
+ */
+export function ensureUuidIds(): void {
+  const needs = snapshot.state.habits.some((h) => !UUID_RE.test(h.id));
+  if (!needs) return;
+  setState((s) => ({
+    ...s,
+    habits: s.habits.map((h) => (UUID_RE.test(h.id) ? h : { ...h, id: newId() })),
+  }));
+}
+
+/**
+ * 서버 상태를 로컬에 병합한다.
+ * - 서버에만 있는 습관 → 로컬에 추가
+ * - 양쪽에 있는 습관 → 메타는 로컬 우선, 완료 기록은 합집합
+ * 로컬에만 있는 데이터는 건드리지 않는다 (호출측이 서버로 push).
+ */
+export function mergeServerHabits(server: Habit[]): void {
+  setState((s) => {
+    const byId = new Map(s.habits.map((h) => [h.id, h]));
+    const merged = s.habits.map((local) => {
+      const remote = server.find((r) => r.id === local.id);
+      if (!remote) return local;
+      const union = [...new Set([...local.completions, ...remote.completions])].sort();
+      return { ...local, completions: union };
+    });
+    const newOnes = server.filter((r) => !byId.has(r.id));
+    return {
+      ...s,
+      onboarded: s.onboarded || newOnes.length > 0,
+      habits: [...merged, ...newOnes],
+    };
+  });
 }
 
 /* ---------- React 바인딩 ---------- */

@@ -2,11 +2,24 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, Download, Monitor, Moon, RotateCcw, Sparkles, Sun } from "lucide-react";
+import {
+  Bell,
+  Cloud,
+  CloudOff,
+  Download,
+  Monitor,
+  Moon,
+  RefreshCw,
+  RotateCcw,
+  Smartphone,
+  Sparkles,
+  Sun,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useHabits } from "@/lib/store";
+import { useSyncStatus } from "@/lib/sync";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
@@ -18,9 +31,38 @@ const THEME_OPTIONS: Array<{ value: ThemeMode; label: string; icon: typeof Sun }
   { value: "system", label: "시스템", icon: Monitor },
 ];
 
+const SYNC_LABELS = {
+  disabled: {
+    icon: CloudOff,
+    title: "로컬 전용",
+    desc: "기록이 이 기기 브라우저에만 저장됩니다. Supabase 환경 변수를 설정하면 서버 동기화가 켜집니다.",
+  },
+  connecting: {
+    icon: RefreshCw,
+    title: "연결 중…",
+    desc: "서버와 기록을 맞추고 있어요.",
+  },
+  online: {
+    icon: Cloud,
+    title: "동기화 켜짐",
+    desc: "익명 계정으로 서버에 안전하게 백업되고 있어요.",
+  },
+  offline: {
+    icon: CloudOff,
+    title: "오프라인",
+    desc: "지금 기록은 저장돼 있고, 연결되면 자동으로 올라갑니다.",
+  },
+  error: {
+    icon: CloudOff,
+    title: "동기화 대기 중",
+    desc: "서버 연결에 실패했어요. 기록은 안전하며 자동으로 재시도합니다.",
+  },
+} as const;
+
 export default function SettingsPage() {
   const { state, updateSettings, loadDemoData, resetAll } = useHabits();
   const { mode, setMode } = useTheme();
+  const sync = useSyncStatus();
   const [confirmReset, setConfirmReset] = useState(false);
 
   const exportData = () => {
@@ -71,6 +113,36 @@ export default function SettingsPage() {
         </div>
       </Card>
 
+      {/* 동기화 상태 */}
+      <Card className="flex items-center gap-4 p-6">
+        {(() => {
+          const meta = SYNC_LABELS[sync.mode];
+          const Icon = meta.icon;
+          return (
+            <>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-surface">
+                <Icon
+                  size={18}
+                  className={cn(
+                    sync.mode === "online" && "text-success",
+                    sync.mode === "connecting" && "animate-spin text-accent",
+                    (sync.mode === "offline" || sync.mode === "error") && "text-warning",
+                    sync.mode === "disabled" && "text-muted"
+                  )}
+                />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold">{meta.title}</p>
+                <p className="text-sm text-muted">
+                  {meta.desc}
+                  {sync.pending > 0 && ` (대기 중 ${sync.pending}건)`}
+                </p>
+              </div>
+            </>
+          );
+        })()}
+      </Card>
+
       {/* 알림/응원 */}
       <Card className="divide-y divide-line p-0">
         {[
@@ -78,7 +150,7 @@ export default function SettingsPage() {
             key: "reminders" as const,
             icon: <Bell size={18} className="text-warning" />,
             title: "하루 한 번 리마인더",
-            desc: "부담 주지 않는 시간에, 딱 한 번만 알려드려요.",
+            desc: "부담 주지 않는 시간에, 딱 한 번만 알려드려요. iPhone에서는 홈 화면에 추가된 앱에서만 알림이 옵니다.",
           },
           {
             key: "encouragement" as const,
@@ -108,6 +180,23 @@ export default function SettingsPage() {
             />
           </div>
         ))}
+      </Card>
+
+      {/* 홈 화면 추가 안내 */}
+      <Card className="flex items-start gap-4 p-6">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-surface">
+          <Smartphone size={18} className="text-accent" />
+        </div>
+        <div>
+          <p className="font-semibold">앱처럼 쓰기 — 홈 화면에 추가</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            iPhone: Safari 공유 버튼 → <strong>홈 화면에 추가</strong>
+            <br />
+            Android: Chrome 메뉴 → <strong>앱 설치</strong> 또는 홈 화면에 추가
+            <br />
+            리마인더 알림을 받으려면 이 과정이 필요해요.
+          </p>
+        </div>
       </Card>
 
       {/* 데이터 */}

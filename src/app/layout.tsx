@@ -5,6 +5,7 @@ import "@fontsource/noto-serif-kr/700.css";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme";
 import { HabitProvider } from "@/lib/store";
+import { SyncProvider } from "@/lib/sync";
 
 const pretendard = localFont({
   src: "../fonts/PretendardVariable.woff2",
@@ -21,6 +22,11 @@ export const metadata: Metadata = {
     title: "작심사일 (作心四日)",
     description: "다시 시작하는 사람이 결국 끝까지 갑니다.",
     type: "website",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "작심사일",
+    statusBarStyle: "default",
   },
 };
 
@@ -55,7 +61,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          <HabitProvider>{children}</HabitProvider>
+          <HabitProvider>
+            <SyncProvider>{children}</SyncProvider>
+          </HabitProvider>
         </ThemeProvider>
       </body>
     </html>
