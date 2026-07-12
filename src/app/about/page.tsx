@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { HanjaSeal } from "@/components/hanja-seal";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -68,12 +69,12 @@ export default function AboutPage() {
           <p className="text-sm font-semibold uppercase tracking-widest text-accent-strong">
             About
           </p>
-          <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight sm:text-6xl">
-            작심사일
-            <span className="ml-3 align-middle text-xl font-medium text-faint sm:text-2xl">
-              作心四日
-            </span>
-          </h1>
+          <div className="mt-8 flex items-end justify-between gap-6">
+            <h1 className="font-serif text-4xl font-bold leading-tight tracking-tight sm:text-6xl">
+              작심사일
+            </h1>
+            <HanjaSeal size="md" className="mb-1 shrink-0 text-faint" />
+          </div>
         </motion.div>
 
         <motion.div {...fadeUp} className="mt-14 space-y-6 text-lg leading-relaxed text-muted">
@@ -95,7 +96,10 @@ export default function AboutPage() {
           </p>
         </motion.div>
 
-        <motion.h2 {...fadeUp} className="mt-24 text-2xl font-bold tracking-tight sm:text-3xl">
+        <motion.h2
+          {...fadeUp}
+          className="mt-24 font-serif text-2xl font-bold tracking-tight sm:text-3xl"
+        >
           핵심 가치
         </motion.h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -116,7 +120,8 @@ export default function AboutPage() {
         </div>
 
         <motion.div {...fadeUp} className="mt-24 rounded-[2rem] bg-surface p-10 text-center">
-          <p className="text-balance text-xl font-semibold leading-relaxed sm:text-2xl">
+          <HanjaSeal size="sm" className="mb-6 text-faint" />
+          <p className="text-balance font-serif text-xl font-semibold leading-relaxed sm:text-2xl">
             &ldquo;우리는 사용자의 실패를 기록하지 않는다.
             <br />
             우리는 사용자의 <span className="text-accent">다시 시작한 용기</span>를

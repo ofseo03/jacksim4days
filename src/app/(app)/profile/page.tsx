@@ -123,7 +123,7 @@ export default function ProfilePage() {
             </div>
           ) : (
             <>
-              <h1 className="mt-5 text-2xl font-bold tracking-tight">
+              <h1 className="mt-5 font-serif text-2xl font-bold tracking-tight">
                 {state.profile?.name ?? "익명의 도전자"}
               </h1>
               {state.profile?.goal && (

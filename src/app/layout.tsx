@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import "@fontsource/noto-serif-kr/600.css";
+import "@fontsource/noto-serif-kr/700.css";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme";
 import { HabitProvider } from "@/lib/store";

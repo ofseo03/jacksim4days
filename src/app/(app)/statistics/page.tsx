@@ -58,7 +58,7 @@ export default function StatisticsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: EASE }}
       >
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">통계</h1>
+        <h1 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl">통계</h1>
         <p className="mt-2 text-muted">
           연속 기록은 없습니다. 돌아온 힘과 쌓인 날들만 있습니다.
         </p>

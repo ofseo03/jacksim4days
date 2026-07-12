@@ -103,7 +103,7 @@ export default function OnboardingPage() {
               <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-success-soft">
                 <SeedSprout size={72} />
               </div>
-              <h1 className="text-balance text-3xl font-bold leading-snug tracking-tight">
+              <h1 className="text-balance font-serif text-3xl font-bold leading-snug tracking-tight">
                 환영합니다.
                 <br />
                 여기서는 실패가 없습니다.
@@ -130,7 +130,7 @@ export default function OnboardingPage() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.5, ease: EASE }}
             >
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="font-serif text-3xl font-bold tracking-tight">
                 어떻게 불러드릴까요?
               </h1>
               <p className="mt-3 text-muted">응원을 건넬 때 사용할 이름이에요.</p>
@@ -169,7 +169,7 @@ export default function OnboardingPage() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.5, ease: EASE }}
             >
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="font-serif text-3xl font-bold tracking-tight">
                 무엇부터 시작해볼까요?
               </h1>
               <p className="mt-3 text-muted">
@@ -254,7 +254,7 @@ export default function OnboardingPage() {
               <div className="mx-auto mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-success-soft">
                 <SeedSprout size={88} />
               </div>
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="font-serif text-3xl font-bold tracking-tight">
                 {name.trim()}님의 씨앗을 심었습니다
               </h1>
               <p className="mt-4 leading-relaxed text-muted">

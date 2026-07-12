@@ -13,6 +13,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { HanjaSeal } from "@/components/hanja-seal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SeedSprout } from "@/components/seed-sprout";
 import { DAILY_QUOTES } from "@/lib/messages";
@@ -60,6 +61,15 @@ export default function LandingPage() {
         style={{ opacity: heroOpacity, y: heroY }}
         className="relative flex min-h-dvh flex-col items-center justify-center px-6 text-center"
       >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: EASE }}
+          className="mb-8"
+        >
+          <HanjaSeal size="sm" className="text-faint" />
+        </motion.div>
+
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -73,7 +83,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.25, ease: EASE }}
-          className="mt-6 text-6xl font-bold tracking-tighter sm:text-8xl md:text-9xl"
+          className="mt-6 font-serif text-6xl font-bold tracking-tight sm:text-8xl md:text-9xl"
         >
           작심<span className="text-accent">사</span>일
         </motion.h1>
@@ -124,7 +134,7 @@ export default function LandingPage() {
           <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-accent-strong">
             <Sparkles size={14} /> 우리의 믿음
           </span>
-          <h2 className="text-balance text-3xl font-bold leading-snug tracking-tight sm:text-5xl sm:leading-snug">
+          <h2 className="text-balance font-serif text-3xl font-bold leading-snug tracking-tight sm:text-5xl sm:leading-snug">
             진짜 변화는
             <br />
             포기하지 않고 다시 시작하는
@@ -143,7 +153,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-5xl px-6 py-24">
         <motion.h2
           {...fadeUp}
-          className="text-center text-3xl font-bold tracking-tight sm:text-4xl"
+          className="text-center font-serif text-3xl font-bold tracking-tight sm:text-4xl"
         >
           우리는 다르게 봅니다
         </motion.h2>
@@ -196,7 +206,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-5xl px-6 py-24">
         <motion.h2
           {...fadeUp}
-          className="text-center text-3xl font-bold tracking-tight sm:text-4xl"
+          className="text-center font-serif text-3xl font-bold tracking-tight sm:text-4xl"
         >
           다시 시작하도록 설계했습니다
         </motion.h2>
@@ -259,7 +269,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.7, delay: i * 0.05, ease: EASE }}
-              className="text-balance text-2xl font-semibold leading-relaxed tracking-tight text-muted sm:text-3xl"
+              className="text-balance font-serif text-2xl font-semibold leading-relaxed tracking-tight text-muted sm:text-3xl"
             >
               {i === 1 ? <span className="text-foreground">{q}</span> : q}
             </motion.p>
@@ -273,8 +283,8 @@ export default function LandingPage() {
           {...fadeUp}
           className="glass mx-auto max-w-4xl rounded-[2.5rem] px-8 py-20 text-center shadow-[var(--shadow-lift)]"
         >
-          <SeedSprout size={64} animate={false} />
-          <h2 className="mt-6 text-balance text-3xl font-bold tracking-tight sm:text-5xl">
+          <HanjaSeal size="lg" className="text-foreground/80" />
+          <h2 className="mt-8 text-balance font-serif text-3xl font-bold tracking-tight sm:text-5xl">
             오늘이 당신의
             <br />
             작심사일입니다

@@ -66,7 +66,7 @@ export default function DashboardPage() {
           <CalendarDays size={14} />
           {formatKorean(today)} {weekdayKo(today)}요일
         </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+        <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight sm:text-4xl">
           {state.profile?.name
             ? `${state.profile.name}님, 어서 오세요`
             : "어서 오세요"}
@@ -232,7 +232,7 @@ export default function DashboardPage() {
       {/* 오늘의 문장 */}
       <section>
         <Card className="bg-surface p-8 text-center">
-          <p className="text-balance text-lg font-semibold leading-relaxed">
+          <p className="text-balance font-serif text-lg font-semibold leading-relaxed">
             &ldquo;{dailyQuote()}&rdquo;
           </p>
           <p className="mt-2 text-xs text-faint">오늘의 문장</p>

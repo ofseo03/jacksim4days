@@ -55,7 +55,7 @@ export function CelebrationOverlay({
               </motion.span>
             )}
             <motion.h2
-              className="text-2xl font-bold tracking-tight"
+              className="font-serif text-2xl font-bold tracking-tight"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.4, ease: EASE }}

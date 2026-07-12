@@ -88,7 +88,7 @@ export default function HabitDetailPage() {
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              <h1 className="font-serif text-2xl font-bold tracking-tight sm:text-3xl">
                 {habit.name}
               </h1>
               {habit.archived && <Badge>보관됨</Badge>}

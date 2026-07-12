@@ -63,6 +63,7 @@
   --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard, -apple-system,
     BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Noto Sans KR",
     sans-serif;
+  --font-serif: "Noto Serif KR", "Apple Myungjo", "Nanum Myeongjo", Batang, serif;
   --ease-apple: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

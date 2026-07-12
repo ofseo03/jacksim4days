@@ -42,7 +42,7 @@ export default function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: EASE }}
       >
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">설정</h1>
+        <h1 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl">설정</h1>
         <p className="mt-2 text-muted">작심사일을 당신에게 맞게 다듬어보세요.</p>
       </motion.section>
 
