@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #111111;
+  --surface: #f5f5f3;
+  --card: #ffffff;
+  --muted: #73737a;
+  --faint: #a3a3ab;
+  --border: rgba(17, 17, 17, 0.08);
+  --accent: #7c5cff;
+  --accent-strong: #6a48f5;
+  --accent-soft: rgba(124, 92, 255, 0.1);
+  --success: #4caf50;
+  --success-soft: rgba(76, 175, 80, 0.12);
+  --warning: #ffb74d;
+  --warning-soft: rgba(255, 183, 77, 0.14);
+  --glass: rgba(255, 255, 255, 0.66);
+  --glass-border: rgba(17, 17, 17, 0.06);
+  --shadow-soft: 0 1px 2px rgba(17, 17, 17, 0.04), 0 8px 32px rgba(17, 17, 17, 0.06);
+  --shadow-lift: 0 2px 4px rgba(17, 17, 17, 0.05), 0 16px 48px rgba(17, 17, 17, 0.1);
+  --ease-apple: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark {
+  --background: #0b0b0d;
+  --foreground: #f5f5f3;
+  --surface: #131316;
+  --card: #17171b;
+  --muted: #9a9aa3;
+  --faint: #6b6b74;
+  --border: rgba(245, 245, 243, 0.09);
+  --accent: #937bff;
+  --accent-strong: #a78fff;
+  --accent-soft: rgba(147, 123, 255, 0.14);
+  --success: #66bb6a;
+  --success-soft: rgba(102, 187, 106, 0.16);
+  --warning: #ffc670;
+  --warning-soft: rgba(255, 198, 112, 0.16);
+  --glass: rgba(23, 23, 27, 0.6);
+  --glass-border: rgba(245, 245, 243, 0.08);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Noto Sans KR",
+    sans-serif;
+  --ease-apple: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 400ms var(--ease-apple), color 400ms var(--ease-apple);
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+}
+
+.card-soft {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.hero-gradient {
+  background:
+    radial-gradient(60rem 32rem at 80% -10%, var(--accent-soft), transparent 60%),
+    radial-gradient(48rem 28rem at 10% 110%, var(--success-soft), transparent 65%);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float-slow {
+  animation: float-slow 5s var(--ease-apple) infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2.4s ease-in-out infinite;
+}
