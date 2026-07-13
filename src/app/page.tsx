@@ -4,18 +4,20 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
+  Brush,
+  CalendarDays,
   ChevronDown,
   Flame,
   HeartHandshake,
   RefreshCw,
   Sparkles,
-  Sprout,
   TrendingUp,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { HanjaSeal } from "@/components/hanja-seal";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SeedSprout } from "@/components/seed-sprout";
+import { HeartStrokes } from "@/components/heart-strokes";
+import { HeartStrokeDemo } from "@/components/heart-stroke-demo";
 import { DAILY_QUOTES } from "@/lib/messages";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -194,11 +196,11 @@ export default function LandingPage() {
             className="glass rounded-3xl p-8 shadow-[var(--shadow-lift)] ring-1 ring-accent/20"
           >
             <p className="flex items-center gap-2 text-sm font-semibold text-accent-strong">
-              <Sprout size={16} /> 작심사일
+              <Brush size={16} /> 작심사일
             </p>
             <ul className="mt-6 space-y-4">
               <li className="flex items-baseline gap-3">
-                <span className="text-2xl">🌱</span>
+                <span className="text-2xl">🖌️</span>
                 <span>
                   <strong>18번 다시 시작</strong> — 돌아온 횟수가 곧 성장
                 </span>
@@ -209,6 +211,27 @@ export default function LandingPage() {
             </ul>
           </motion.div>
         </div>
+      </section>
+
+      {/* 인터랙티브 데모: 心 4획 */}
+      <section className="mx-auto max-w-4xl px-6 py-24">
+        <motion.div {...fadeUp} className="text-center">
+          <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-accent-strong">
+            <Brush size={14} /> 직접 그어보세요
+          </span>
+          <h2 className="text-balance font-serif text-3xl font-bold leading-snug tracking-tight sm:text-4xl">
+            체크박스 대신, 한 획
+          </h2>
+          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
+            마음 심(心)은 정확히 네 획으로 씁니다.
+            <br />
+            매일의 완료가 붓의 한 획이 되어, <strong className="text-foreground">4일이면 하나의 마음</strong>이
+            완성됩니다.
+          </p>
+        </motion.div>
+        <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.12 }} className="mt-12">
+          <HeartStrokeDemo />
+        </motion.div>
       </section>
 
       {/* 기능 */}
@@ -222,9 +245,11 @@ export default function LandingPage() {
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
-              icon: <SeedSprout size={40} animate={false} />,
-              title: "씨앗이 자라는 완료",
-              body: "체크박스 대신 씨앗이 자랍니다. 오늘의 완료가 하나의 생명이 됩니다.",
+              icon: (
+                <HeartStrokes size={38} strokes={4} animate={false} className="text-foreground" />
+              ),
+              title: "한 획씩 완성되는 心",
+              body: "체크박스 대신 붓의 한 획. 4일의 완료가 모여 마음 심(心) 한 글자가 완성됩니다.",
             },
             {
               icon: <RefreshCw className="text-accent" size={28} />,
@@ -247,7 +272,7 @@ export default function LandingPage() {
               body: "AI 코치가 상황을 읽고 오늘의 당신에게 필요한 문장을 건넵니다.",
             },
             {
-              icon: <Sprout className="text-success" size={28} />,
+              icon: <CalendarDays className="text-success" size={28} />,
               title: "Restart Heatmap",
               body: "완료한 날은 초록으로, 다시 시작한 날은 보랏빛으로 빛납니다.",
             },
