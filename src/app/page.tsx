@@ -97,10 +97,19 @@ export default function LandingPage() {
           오늘도 다시 시작합니다.
         </motion.p>
 
-        <motion.div
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6, ease: EASE }}
+          className="mt-3 font-serif text-2xl font-bold tracking-tight sm:text-3xl"
+        >
+          진짜는 <span className="text-accent">4일</span>부터니까
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.75, ease: EASE }}
           className="mt-12"
         >
           <Link
