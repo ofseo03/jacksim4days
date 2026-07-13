@@ -1,10 +1,15 @@
 import { HEART_STROKE_PATHS, HEART_VIEWBOX } from "@/components/heart-strokes";
 
-/** 공유 이미지는 테마와 무관하게 한지 느낌의 밝은 톤으로 고정한다. */
-const PAPER = "#faf7f0";
-const INK = "#1b1b1f";
-const SUBTLE = "#73737a";
-const SEAL = "#7c5cff";
+export type HeartImageTone = "paper" | "ink";
+
+/** paper = 한지에 먹, ink = 먹빛 밤에 흰 글씨. 앱 테마를 따라간다. */
+const PALETTES: Record<
+  HeartImageTone,
+  { bg: string; stroke: string; subtle: string; seal: string }
+> = {
+  paper: { bg: "#faf7f0", stroke: "#1b1b1f", subtle: "#73737a", seal: "#7c5cff" },
+  ink: { bg: "#111114", stroke: "#f5f2ea", subtle: "#9a9aa3", seal: "#937bff" },
+};
 
 function drawHeart(
   ctx: CanvasRenderingContext2D,
@@ -32,11 +37,17 @@ function drawHeart(
   ctx.restore();
 }
 
-function drawSeal(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+function drawSeal(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  color: string
+) {
   ctx.save();
   ctx.translate(x + size / 2, y + size / 2);
   ctx.rotate((-8 * Math.PI) / 180);
-  ctx.fillStyle = SEAL;
+  ctx.fillStyle = color;
   const r = size * 0.18;
   ctx.beginPath();
   ctx.roundRect(-size / 2, -size / 2, size, size, r);
@@ -56,6 +67,16 @@ export function heartSeed(key: string): number {
   return Math.abs(h);
 }
 
+export interface HeartImageOptions {
+  name?: string;
+  count: number;
+  seeds: number[];
+  /** 기본 paper(한지). 다크 테마에서는 ink 권장 */
+  tone?: HeartImageTone;
+  /** 큰 제목을 직접 지정 (미지정 시 "OO님의 N개의 마음") */
+  heading?: string;
+}
+
 /**
  * 완성된 心 아카이브를 하나의 먹그림 이미지(1080×1080 PNG)로 그린다.
  * 1개면 큰 心 하나, 여러 개면 최근 16개를 격자로 배치한다.
@@ -64,11 +85,10 @@ export async function renderHeartsImage({
   name,
   count,
   seeds,
-}: {
-  name?: string;
-  count: number;
-  seeds: number[];
-}): Promise<Blob> {
+  tone = "paper",
+  heading,
+}: HeartImageOptions): Promise<Blob> {
+  const palette = PALETTES[tone];
   if (typeof document !== "undefined" && "fonts" in document) {
     try {
       await document.fonts.load('bold 52px "Noto Serif KR"');
@@ -86,7 +106,7 @@ export async function renderHeartsImage({
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas 2d context unavailable");
 
-  ctx.fillStyle = PAPER;
+  ctx.fillStyle = palette.bg;
   ctx.fillRect(0, 0, W, H);
 
   const shown = Math.min(count, 16);
@@ -94,8 +114,8 @@ export async function renderHeartsImage({
     const size = 520;
     const x = (W - size) / 2;
     const y = 160;
-    drawHeart(ctx, x, y, size, INK);
-    drawSeal(ctx, x + size - 60, y - 10, 110);
+    drawHeart(ctx, x, y, size, palette.stroke);
+    drawSeal(ctx, x + size - 60, y - 10, 110, palette.seal);
   } else {
     const cols = shown <= 4 ? 2 : shown <= 9 ? 3 : 4;
     const rows = Math.ceil(shown / cols);
@@ -110,22 +130,22 @@ export async function renderHeartsImage({
       const alpha = 0.6 + (seed % 5) * 0.1;
       const col = i % cols;
       const row = Math.floor(i / cols);
-      drawHeart(ctx, ox + col * cell + cell * 0.1, oy + row * cell + cell * 0.1, cell * 0.8, INK, alpha, rot);
+      drawHeart(ctx, ox + col * cell + cell * 0.1, oy + row * cell + cell * 0.1, cell * 0.8, palette.stroke, alpha, rot);
     }
-    drawSeal(ctx, ox + gridW - 40, oy - 50, 96);
+    drawSeal(ctx, ox + gridW - 40, oy - 50, 96, palette.seal);
   }
 
-  ctx.fillStyle = INK;
+  ctx.fillStyle = palette.stroke;
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   ctx.font = 'bold 54px "Noto Serif KR", serif';
   const who = name ? `${name}님의 ` : "";
   ctx.fillText(
-    count <= 1 ? `${who}첫 번째 마음` : `${who}${count}개의 마음`,
+    heading ?? (count <= 1 ? `${who}첫 번째 마음` : `${who}${count}개의 마음`),
     W / 2,
     866
   );
-  ctx.fillStyle = SUBTLE;
+  ctx.fillStyle = palette.subtle;
   ctx.font = '32px "Noto Serif KR", serif';
   ctx.fillText("作心四日 — 진짜는 4일부터니까", W / 2, 934);
 
@@ -138,11 +158,9 @@ export async function renderHeartsImage({
 }
 
 /** Web Share API가 가능하면 공유하고, 아니면 파일로 내려받는다. */
-export async function shareHeartsImage(opts: {
-  name?: string;
-  count: number;
-  seeds: number[];
-}): Promise<"shared" | "downloaded"> {
+export async function shareHeartsImage(
+  opts: HeartImageOptions
+): Promise<"shared" | "downloaded"> {
   const blob = await renderHeartsImage(opts);
   const file = new File([blob], "jaksim4days-heart.png", { type: "image/png" });
 

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { addDays, formatShort, todayISO } from "@/lib/dates";
 import { heartSeed, shareHeartsImage } from "@/lib/heart-image";
 import { computeStats } from "@/lib/stats";
+import { useTheme } from "@/lib/theme";
 import type { Habit } from "@/lib/types";
 import { HEART_STROKE_COUNT, HeartStrokes } from "./heart-strokes";
 
@@ -28,11 +29,24 @@ interface PartialHeart {
 }
 
 /**
- * 나의 먹그림 — 4일마다 완성된 心이 한 점씩 쌓이는 개인 아카이브.
+ * 먹그림 아카이브 — 4일마다 완성된 心이 한 점씩 쌓인다.
  * 같은 心은 항상 같은 기울기·농도를 가져 시간이 지날수록 그림이 짙어진다.
+ * habits는 호출부에서 걸러서 전달한다(전체 아카이브 또는 습관 하나).
  */
-export function HeartArchive({ habits, name }: { habits: Habit[]; name?: string }) {
+export function HeartArchive({
+  habits,
+  name,
+  title = "나의 먹그림",
+  shareHeading,
+}: {
+  habits: Habit[];
+  name?: string;
+  title?: string;
+  /** 공유 이미지 제목 재정의 (예: 습관 상세에서 습관 이름) */
+  shareHeading?: string;
+}) {
   const today = todayISO();
+  const { isDark } = useTheme();
   const [shareState, setShareState] = useState<"idle" | "busy" | "shared" | "downloaded">(
     "idle"
   );
@@ -40,7 +54,7 @@ export function HeartArchive({ habits, name }: { habits: Habit[]; name?: string 
   const { hearts, partials } = useMemo(() => {
     const hearts: CompletedHeart[] = [];
     const partials: PartialHeart[] = [];
-    for (const h of habits.filter((x) => !x.archived)) {
+    for (const h of habits) {
       const stats = computeStats(h, today);
       for (const j of stats.journeys) {
         const complete = Math.floor(j.length / HEART_STROKE_COUNT);
@@ -77,6 +91,10 @@ export function HeartArchive({ habits, name }: { habits: Habit[]; name?: string 
         name,
         count: hearts.length,
         seeds: hearts.slice(-16).map((h) => h.seed),
+        tone: isDark ? "ink" : "paper",
+        heading: shareHeading
+          ? `${shareHeading} — ${hearts.length}개의 마음`
+          : undefined,
       });
       setShareState(result);
     } catch {
@@ -90,7 +108,7 @@ export function HeartArchive({ habits, name }: { habits: Habit[]; name?: string 
     <Card className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-bold tracking-tight">나의 먹그림</h2>
+          <h2 className="font-bold tracking-tight">{title}</h2>
           <p className="mt-1 text-sm text-muted">
             {hearts.length > 0
               ? `${hearts.length}개의 마음이 모였습니다 — 4일마다 心 한 글자가 쌓입니다.`

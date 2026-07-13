@@ -107,7 +107,10 @@ export default function StatisticsPage() {
 
           {/* 나의 먹그림 — 완성된 心 아카이브 */}
           <section>
-            <HeartArchive habits={state.habits} name={state.profile?.name} />
+            <HeartArchive
+              habits={state.habits.filter((h) => !h.archived)}
+              name={state.profile?.name}
+            />
           </section>
 
           {/* 히트맵 */}

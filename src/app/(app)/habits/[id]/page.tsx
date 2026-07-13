@@ -19,6 +19,7 @@ import {
   CelebrationOverlay,
   type Celebration,
 } from "@/components/celebration";
+import { HeartArchive } from "@/components/heart-archive";
 import { RestartCalendar } from "@/components/restart-calendar";
 import { StatTile } from "@/components/stat-tile";
 import { Badge } from "@/components/ui/badge";
@@ -148,6 +149,16 @@ export default function HabitDetailPage() {
           label="복귀율"
           value={`${Math.round(stats.recoveryRate * 100)}%`}
           sub="돌아오는 힘"
+        />
+      </section>
+
+      {/* 이 습관의 먹그림 */}
+      <section>
+        <HeartArchive
+          habits={[habit]}
+          name={state.profile?.name}
+          title="이 습관의 먹그림"
+          shareHeading={`${habit.emoji} ${habit.name}`}
         />
       </section>
 
