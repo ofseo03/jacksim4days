@@ -3,19 +3,18 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, Plus, Sparkles, Sprout, Trophy } from "lucide-react";
-import { CelebrationOverlay, type Celebration } from "@/components/celebration";
+import { CalendarDays, Plus, RefreshCw, Sparkles, Trophy } from "lucide-react";
+import {
+  buildCelebration,
+  CelebrationOverlay,
+  type Celebration,
+} from "@/components/celebration";
 import { HabitCard } from "@/components/habit-card";
 import { StatTile } from "@/components/stat-tile";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatKorean, thisWeek, todayISO, weekdayKo } from "@/lib/dates";
-import {
-  coachMessage,
-  completeCheer,
-  dailyQuote,
-  restartCelebration,
-} from "@/lib/messages";
+import { coachMessage, dailyQuote } from "@/lib/messages";
 import { aggregateStats } from "@/lib/stats";
 import { useHabits } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -38,20 +37,10 @@ export default function DashboardPage() {
   }
 
   const handleComplete = (id: string) => {
+    const prevJourney =
+      agg.perHabit.find((x) => x.habit.id === id)?.stats.currentJourney ?? 0;
     const { isRestart } = completeToday(id);
-    setCelebration(
-      isRestart
-        ? {
-            isRestart: true,
-            title: "다시 시작했습니다",
-            message: restartCelebration(),
-          }
-        : {
-            isRestart: false,
-            title: "오늘도 해냈어요",
-            message: completeCheer(),
-          }
-    );
+    setCelebration(buildCelebration(isRestart, isRestart ? 1 : prevJourney + 1));
   };
 
   return (
@@ -88,14 +77,14 @@ export default function DashboardPage() {
 
         {active.length === 0 ? (
           <Card className="flex flex-col items-center gap-4 p-12 text-center">
-            <span className="text-4xl">🌱</span>
-            <p className="font-semibold">아직 심은 씨앗이 없어요</p>
+            <span className="text-4xl">🖌️</span>
+            <p className="font-semibold">아직 새긴 마음이 없어요</p>
             <p className="text-sm text-muted">
-              첫 습관을 심어볼까요? 아주 작게 시작해도 충분합니다.
+              첫 습관을 새겨볼까요? 아주 작게 시작해도 충분합니다.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button onClick={() => setAddOpen(true)}>
-                <Plus size={16} /> 첫 습관 심기
+                <Plus size={16} /> 첫 습관 새기기
               </Button>
               <Button variant="outline" onClick={loadDemoData}>
                 데모 데이터 살펴보기
@@ -174,10 +163,10 @@ export default function DashboardPage() {
             <StatTile
               index={0}
               label="다시 시작"
-              icon={<Sprout size={15} className="text-accent" />}
+              icon={<RefreshCw size={15} className="text-accent" />}
               value={
                 <>
-                  🌱 {agg.totalRestarts}
+                  {agg.totalRestarts}
                   <span className="ml-1 text-base font-medium text-muted">번</span>
                 </>
               }

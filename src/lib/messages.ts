@@ -28,14 +28,14 @@ export const RETURN_GREETINGS = [
 ];
 
 export const RESTART_CELEBRATIONS = [
-  "다시 돌아오셨군요. 그게 진짜 실력입니다. 🌱",
+  "다시 돌아오셨군요. 그게 진짜 실력입니다. 🖌️",
   "쉼표 뒤에 다시 쓰는 문장이 더 단단합니다.",
   "오늘의 다시 시작을 기록했습니다. 당신의 용기에 박수를 보냅니다.",
   "포기하지 않고 돌아온 당신, 이미 어제의 나를 이겼습니다.",
 ];
 
 export const COMPLETE_CHEERS = [
-  "오늘의 씨앗을 심었습니다. 🌱",
+  "오늘의 한 획을 그었습니다. 🖌️",
   "작지만 확실한 한 걸음이었습니다.",
   "오늘도 해냈습니다. 내일의 내가 고마워할 거예요.",
   "빛이 하나 더 켜졌습니다. ✨",
@@ -64,7 +64,7 @@ export function coachMessage(
 ): string {
   const who = name ? `${name}님, ` : "";
   if (agg.activeCount === 0) {
-    return `${who}첫 습관을 심어볼까요? 아주 작게 시작해도 충분합니다.`;
+    return `${who}첫 습관을 새겨볼까요? 아주 작게 시작해도 충분합니다.`;
   }
   if (agg.doneTodayCount === 0) {
     return `${who}${returnGreeting()} 오늘의 첫 완료를 기다리고 있어요.`;

@@ -51,7 +51,7 @@ export function RestartHeatmap({ habits, weeks = 16 }: { habits: Habit[]; weeks?
                       ? ""
                       : `${formatShort(cell.date)} · ${
                           cell.restart
-                            ? "다시 시작한 날 🌱"
+                            ? "다시 시작한 날 🖌️"
                             : cell.count > 0
                               ? `${cell.count}개 완료`
                               : "쉬어간 날"

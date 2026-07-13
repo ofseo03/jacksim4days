@@ -10,12 +10,12 @@ import { CATEGORY_META, type HabitCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
-const EMOJIS = ["🌱", "🏃", "📖", "💧", "🧘", "✏️", "🗣️", "🌅", "💪", "🥗", "✍️", "🎧"];
+const EMOJIS = ["🖌️", "🏃", "📖", "💧", "🧘", "✏️", "🗣️", "🌅", "💪", "🥗", "✍️", "🎧"];
 
 export function AddHabitDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { addHabit } = useHabits();
   const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("🌱");
+  const [emoji, setEmoji] = useState("🖌️");
   const [category, setCategory] = useState<HabitCategory>("custom");
 
   const submit = () => {
@@ -23,7 +23,7 @@ export function AddHabitDialog({ open, onClose }: { open: boolean; onClose: () =
     if (!n) return;
     addHabit({ name: n, emoji, category });
     setName("");
-    setEmoji("🌱");
+    setEmoji("🖌️");
     setCategory("custom");
     onClose();
   };
@@ -51,7 +51,7 @@ export function AddHabitDialog({ open, onClose }: { open: boolean; onClose: () =
             aria-label="새 습관 추가"
           >
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold tracking-tight">새 씨앗 심기</h2>
+              <h2 className="text-xl font-bold tracking-tight">새 마음 새기기</h2>
               <button
                 type="button"
                 onClick={onClose}
@@ -127,7 +127,7 @@ export function AddHabitDialog({ open, onClose }: { open: boolean; onClose: () =
               disabled={!name.trim()}
               onClick={submit}
             >
-              심기 🌱
+              새기기 🖌️
             </Button>
           </motion.div>
         </motion.div>

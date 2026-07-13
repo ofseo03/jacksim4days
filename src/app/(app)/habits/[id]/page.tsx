@@ -4,15 +4,28 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Archive, ArchiveRestore, ArrowLeft, Check, Sparkles, Sprout, Trash2 } from "lucide-react";
-import { CelebrationOverlay, type Celebration } from "@/components/celebration";
+import {
+  Archive,
+  ArchiveRestore,
+  ArrowLeft,
+  Check,
+  PenLine,
+  RefreshCw,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import {
+  buildCelebration,
+  CelebrationOverlay,
+  type Celebration,
+} from "@/components/celebration";
 import { RestartCalendar } from "@/components/restart-calendar";
 import { StatTile } from "@/components/stat-tile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatKorean, formatShort, todayISO } from "@/lib/dates";
-import { completeCheer, habitComment, restartCelebration } from "@/lib/messages";
+import { habitComment } from "@/lib/messages";
 import { computeStats } from "@/lib/stats";
 import { useHabits } from "@/lib/store";
 import { CATEGORY_META } from "@/lib/types";
@@ -58,12 +71,9 @@ export default function HabitDetailPage() {
   );
 
   const handleComplete = () => {
+    const prevJourney = stats.currentJourney;
     const { isRestart } = completeToday(habit.id);
-    setCelebration(
-      isRestart
-        ? { isRestart: true, title: "다시 시작했습니다", message: restartCelebration() }
-        : { isRestart: false, title: "오늘도 해냈어요", message: completeCheer() }
-    );
+    setCelebration(buildCelebration(isRestart, isRestart ? 1 : prevJourney + 1));
   };
 
   return (
@@ -110,7 +120,7 @@ export default function HabitDetailPage() {
             </>
           ) : (
             <>
-              <Sprout size={18} /> 오늘 완료
+              <PenLine size={18} /> 오늘의 한 획
             </>
           )}
         </Button>
@@ -127,8 +137,8 @@ export default function HabitDetailPage() {
         <StatTile
           index={0}
           label="다시 시작"
-          icon={<Sprout size={15} className="text-accent" />}
-          value={`🌱 ${stats.restartCount}번`}
+          icon={<RefreshCw size={15} className="text-accent" />}
+          value={`${stats.restartCount}번`}
           sub="첫 시작은 세지 않아요"
         />
         <StatTile index={1} label="현재 여정" value={`${stats.currentJourney}일`} sub={stats.currentJourney >= 4 ? "작심사일 달성!" : "차근차근"} />

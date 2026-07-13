@@ -90,7 +90,7 @@ export default function AboutPage() {
           </p>
           <p>
             작심사일은 반대로 설계했습니다. 연속이 끊겨도 아무것도 잃지 않습니다. 대신
-            돌아올 때마다 <strong className="text-foreground">🌱 다시 시작</strong>이 하나
+            돌아올 때마다 <strong className="text-foreground">🖌️ 다시 시작</strong>이 하나
             늘어납니다. 우리는 완주가 아니라 복귀를 축하합니다. 진짜 변화는 포기하지 않고
             다시 시작하는 <strong className="text-accent">4일째</strong>부터 시작되니까요.
           </p>

@@ -79,7 +79,7 @@ export const CATEGORY_META: Record<HabitCategory, { label: string; emoji: string
   english: { label: "영어", emoji: "🗣️" },
   meditation: { label: "명상", emoji: "🧘" },
   quit: { label: "금연·절제", emoji: "🚭" },
-  custom: { label: "나만의 습관", emoji: "🌱" },
+  custom: { label: "나만의 습관", emoji: "🖌️" },
 };
 
 export const PRESET_HABITS: Array<{

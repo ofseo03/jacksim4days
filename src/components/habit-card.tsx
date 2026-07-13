@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Sprout } from "lucide-react";
+import { Check, ChevronRight, PenLine, RefreshCw } from "lucide-react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
@@ -50,7 +50,7 @@ export function HabitCard({
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
             {stats.restartCount > 0 && (
               <Badge tone="accent">
-                <Sprout size={12} /> {stats.restartCount}번 다시 시작
+                <RefreshCw size={12} /> {stats.restartCount}번 다시 시작
               </Badge>
             )}
             {stats.currentJourney > 0 ? (
@@ -76,7 +76,7 @@ export function HabitCard({
               : "border-line bg-transparent text-faint hover:border-success hover:text-success"
           )}
         >
-          {stats.doneToday ? <Check size={22} strokeWidth={3} /> : <Sprout size={20} />}
+          {stats.doneToday ? <Check size={22} strokeWidth={3} /> : <PenLine size={20} />}
         </button>
       </Card>
     </motion.div>

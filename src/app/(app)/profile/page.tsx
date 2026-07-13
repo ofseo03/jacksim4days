@@ -23,8 +23,8 @@ interface BadgeDef {
 
 const BADGES: BadgeDef[] = [
   {
-    emoji: "🌱",
-    title: "첫 씨앗",
+    emoji: "🖌️",
+    title: "첫 획",
     desc: "첫 습관을 완료했어요",
     earned: (a) => a.totalDays >= 1,
   },
@@ -41,9 +41,9 @@ const BADGES: BadgeDef[] = [
     earned: (a) => a.totalRestarts >= 5,
   },
   {
-    emoji: "🌳",
+    emoji: "心",
     title: "작심사일",
-    desc: "4일 이상 이어간 여정이 있어요",
+    desc: "4일을 이어 心 한 글자를 완성했어요",
     earned: (a) => a.perHabit.some((x) => x.stats.longestJourney >= 4),
   },
   {
@@ -99,8 +99,16 @@ export default function ProfilePage() {
         transition={{ duration: 0.6, ease: EASE }}
       >
         <Card glass className="p-8 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-accent-soft text-4xl">
-            {agg.totalRestarts >= 5 ? "🌳" : agg.totalDays >= 1 ? "🌿" : "🌱"}
+          <div
+            className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-accent-soft font-serif text-4xl font-bold ${
+              agg.totalRestarts >= 5
+                ? "text-accent-strong"
+                : agg.totalDays >= 1
+                  ? "text-foreground"
+                  : "text-faint"
+            }`}
+          >
+            心
           </div>
 
           {editing ? (
@@ -147,7 +155,7 @@ export default function ProfilePage() {
 
           <div className="mt-7 grid grid-cols-3 divide-x divide-line border-t border-line pt-6">
             <div>
-              <p className="text-2xl font-bold">🌱 {agg.totalRestarts}</p>
+              <p className="text-2xl font-bold">{agg.totalRestarts}</p>
               <p className="mt-1 text-xs text-muted">다시 시작</p>
             </div>
             <div>

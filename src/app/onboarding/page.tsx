@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Plus, Sprout } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brush, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SeedSprout } from "@/components/seed-sprout";
+import { HeartStrokes } from "@/components/heart-strokes";
 import { Logo } from "@/components/logo";
 import { todayISO } from "@/lib/dates";
 import { useHabits } from "@/lib/store";
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
     const n = customName.trim();
     if (!n || picked.length >= 5) return;
     if (!picked.some((x) => x.name === n)) {
-      setPicked((prev) => [...prev, { name: n, emoji: "🌱", category: "custom" }]);
+      setPicked((prev) => [...prev, { name: n, emoji: "🖌️", category: "custom" }]);
     }
     setCustomName("");
   };
@@ -100,8 +100,8 @@ export default function OnboardingPage() {
               transition={{ duration: 0.5, ease: EASE }}
               className="text-center"
             >
-              <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-success-soft">
-                <SeedSprout size={72} />
+              <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-accent-soft">
+                <HeartStrokes size={68} strokes={4} draw className="text-foreground" />
               </div>
               <h1 className="text-balance font-serif text-3xl font-bold leading-snug tracking-tight">
                 환영합니다.
@@ -226,7 +226,7 @@ export default function OnboardingPage() {
               </div>
 
               <p className="mt-4 flex items-center gap-1.5 text-sm text-muted">
-                <Sprout size={14} className="text-success" />
+                <Brush size={14} className="text-accent" />
                 {picked.length > 0
                   ? `${picked.length}개 선택 — 좋은 시작이에요.`
                   : "가장 쉬워 보이는 것부터 골라보세요."}
@@ -237,7 +237,7 @@ export default function OnboardingPage() {
                   <ArrowLeft size={16} /> 이전
                 </Button>
                 <Button variant="accent" className="flex-1" disabled={!canNext} onClick={finish}>
-                  심기 완료 🌱
+                  새기기 완료 🖌️
                 </Button>
               </div>
             </motion.div>
@@ -251,11 +251,11 @@ export default function OnboardingPage() {
               transition={{ duration: 0.6, ease: EASE }}
               className="text-center"
             >
-              <div className="mx-auto mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-success-soft">
-                <SeedSprout size={88} />
+              <div className="mx-auto mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-accent-soft">
+                <HeartStrokes size={84} strokes={4} draw className="text-foreground" />
               </div>
               <h1 className="font-serif text-3xl font-bold tracking-tight">
-                {name.trim()}님의 씨앗을 심었습니다
+                {name.trim()}님, 작심(作心)했습니다
               </h1>
               <p className="mt-4 leading-relaxed text-muted">
                 오늘이 당신의 작심사일입니다.

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Sprout } from "lucide-react";
+import { RefreshCw, Sparkles } from "lucide-react";
+import { HeartArchive } from "@/components/heart-archive";
 import { RestartHeatmap } from "@/components/restart-heatmap";
 import { StatTile } from "@/components/stat-tile";
 import { Card } from "@/components/ui/card";
@@ -80,8 +81,8 @@ export default function StatisticsPage() {
             <StatTile
               index={0}
               label="Restart Count"
-              icon={<Sprout size={15} className="text-accent" />}
-              value={`🌱 ${agg.totalRestarts}`}
+              icon={<RefreshCw size={15} className="text-accent" />}
+              value={`${agg.totalRestarts}회`}
               sub="다시 시작한 총 횟수"
             />
             <StatTile
@@ -102,6 +103,11 @@ export default function StatisticsPage() {
               value={`${agg.doneTodayCount}/${agg.activeCount}`}
               sub="오늘 완료한 습관"
             />
+          </section>
+
+          {/* 나의 먹그림 — 완성된 心 아카이브 */}
+          <section>
+            <HeartArchive habits={state.habits} name={state.profile?.name} />
           </section>
 
           {/* 히트맵 */}
@@ -178,7 +184,7 @@ export default function StatisticsPage() {
                       className="flex items-center gap-3 text-sm"
                     >
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft">
-                        🌱
+                        <RefreshCw size={14} className="text-accent-strong" />
                       </span>
                       <span className="font-medium">
                         {e.emoji} {e.habit}
