@@ -48,7 +48,7 @@ export default function AboutPage() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Link
-              href="/onboarding"
+              href="/login"
               className="hidden h-10 items-center rounded-full bg-foreground px-5 text-sm font-semibold text-background transition-transform duration-300 hover:scale-[1.02] sm:inline-flex"
             >
               시작하기
@@ -128,7 +128,7 @@ export default function AboutPage() {
             기록한다.&rdquo;
           </p>
           <Link
-            href="/onboarding"
+            href="/login"
             className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-foreground px-8 text-sm font-semibold text-background transition-transform duration-300 hover:scale-[1.02]"
           >
             오늘 시작하기 <ArrowRight size={16} />

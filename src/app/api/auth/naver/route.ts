@@ -12,7 +12,7 @@ export function GET(request: NextRequest) {
 
   if (!clientId || !process.env.NAVER_CLIENT_SECRET) {
     return NextResponse.redirect(
-      `${origin}/profile?auth_error=${encodeURIComponent(
+      `${origin}/login?auth_error=${encodeURIComponent(
         "네이버 로그인이 아직 설정되지 않았어요. (NAVER_CLIENT_ID/SECRET)"
       )}`
     );

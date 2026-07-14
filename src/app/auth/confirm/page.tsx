@@ -20,11 +20,11 @@ function ConfirmInner() {
     ran.current = true;
 
     const tokenHash = params.get("token_hash");
-    const next = params.get("next") ?? "/profile";
+    const next = params.get("next") ?? "/login";
     const supabase = getSupabase();
 
     if (!supabase || !tokenHash) {
-      router.replace("/profile");
+      router.replace("/login");
       return;
     }
 
@@ -35,7 +35,7 @@ function ConfirmInner() {
           setError(error.message);
           return;
         }
-        router.replace(next.startsWith("/") ? next : "/profile");
+        router.replace(next.startsWith("/") ? next : "/login");
       });
   }, [params, router]);
 
@@ -48,9 +48,9 @@ function ConfirmInner() {
           <button
             type="button"
             className="mt-2 text-sm font-semibold text-accent"
-            onClick={() => router.replace("/profile")}
+            onClick={() => router.replace("/login")}
           >
-            프로필로 돌아가기
+            로그인으로 돌아가기
           </button>
         </>
       ) : (
