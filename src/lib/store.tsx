@@ -156,6 +156,7 @@ function uncompleteToday(id: string) {
 
 function setProfile(profile: Profile) {
   setState((s) => ({ ...s, profile }));
+  enqueue({ t: "profile_upsert", profile });
 }
 
 function updateSettings(patch: Partial<AppSettings>) {
@@ -171,7 +172,10 @@ function completeOnboarding(profile: Profile, habits: Habit[]) {
     profile,
     habits: [...s.habits, ...withIds],
   }));
-  enqueue(...withIds.map((h) => ({ t: "habit_upsert" as const, habit: habitToRow(h) })));
+  enqueue(
+    { t: "profile_upsert", profile },
+    ...withIds.map((h) => ({ t: "habit_upsert" as const, habit: habitToRow(h) }))
+  );
 }
 
 function loadDemoData() {
@@ -241,13 +245,17 @@ function loadDemoData() {
     },
   ];
   const removed = snapshot.state.habits;
+  const profile =
+    snapshot.state.profile ??
+    ({ name: "체험자", joinedAt: today, goal: "다시 시작하는 연습" } as Profile);
   setState((s) => ({
     ...s,
     onboarded: true,
-    profile: s.profile ?? { name: "체험자", joinedAt: today, goal: "다시 시작하는 연습" },
+    profile,
     habits: demo,
   }));
   enqueue(
+    { t: "profile_upsert", profile },
     ...removed.map((h) => ({ t: "habit_delete" as const, id: h.id })),
     ...demo.map((h) => ({ t: "habit_upsert" as const, habit: habitToRow(h) })),
     ...demo.flatMap((h) =>
@@ -266,7 +274,10 @@ function resetAll() {
   }
   emit();
   // 서버 기록도 함께 삭제 — 남겨두면 다음 부팅 때 다시 내려와 초기화가 무효가 된다
-  enqueue(...removed.map((h) => ({ t: "habit_delete" as const, id: h.id })));
+  enqueue(
+    { t: "profile_delete" },
+    ...removed.map((h) => ({ t: "habit_delete" as const, id: h.id }))
+  );
 }
 
 function demoStart(daysAgo: number): string {
@@ -324,6 +335,15 @@ export function mergeServerHabits(server: Habit[]): void {
       habits: [...merged, ...newOnes],
     };
   });
+}
+
+/**
+ * 서버에서 내려온 프로필을 로컬에 반영한다 (push 없음 — sync 전용).
+ * 계정 전환 시엔 서버 값(null 포함)으로 교체하고,
+ * 같은 계정 병합 시엔 로컬이 비어 있을 때만 채운다.
+ */
+export function setProfileFromServer(profile: Profile | null): void {
+  setState((s) => ({ ...s, profile }));
 }
 
 /**

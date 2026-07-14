@@ -21,8 +21,9 @@ import {
   hydrateStore,
   mergeServerHabits,
   replaceServerHabits,
+  setProfileFromServer,
 } from "./store";
-import type { Habit, HabitCategory } from "./types";
+import type { Habit, HabitCategory, Profile } from "./types";
 import { useSyncExternalStore } from "react";
 
 let started = false;
@@ -102,15 +103,29 @@ async function initSync(): Promise<void> {
     ensureUuidIds();
 
     // ---- pull ----
-    const [{ data: habitRows, error: hErr }, { data: logRows, error: lErr }] =
-      await Promise.all([
-        supabase
-          .from("habits")
-          .select("id,name,emoji,category,created_at,archived_at"),
-        supabase.from("habit_logs").select("habit_id,log_date"),
-      ]);
+    const [
+      { data: habitRows, error: hErr },
+      { data: logRows, error: lErr },
+      profilePull,
+    ] = await Promise.all([
+      supabase
+        .from("habits")
+        .select("id,name,emoji,category,created_at,archived_at"),
+      supabase.from("habit_logs").select("habit_id,log_date"),
+      supabase.from("profiles").select("name,goal,joined_at").maybeSingle(),
+    ]);
     if (hErr) throw hErr;
     if (lErr) throw lErr;
+    // 프로필은 0002 마이그레이션 전 배포에 테이블이 없을 수 있어 비치명 처리
+    const serverProfile: Profile | null =
+      !profilePull.error && profilePull.data
+        ? {
+            name: profilePull.data.name,
+            goal: profilePull.data.goal ?? undefined,
+            joinedAt: String(profilePull.data.joined_at).slice(0, 10),
+          }
+        : null;
+    const profileTableMissing = profilePull.error?.code === "42P01";
 
     const logsByHabit = new Map<string, string[]>();
     for (const row of logRows ?? []) {
@@ -132,9 +147,23 @@ async function initSync(): Promise<void> {
       // ---- 계정 전환: 로그인한 계정의 데이터만 보여준다 ----
       // 이전 계정의 로컬 기록은 그 계정(서버)에 이미 안전하게 남아 있다.
       replaceServerHabits(serverHabits);
+      setProfileFromServer(serverProfile);
     } else {
       // ---- merge (로컬 ← 서버) ----
       mergeServerHabits(serverHabits);
+
+      // 프로필: 로컬 우선 (습관 메타와 동일한 정책)
+      const localProfile = getStoreState().profile;
+      if (!localProfile && serverProfile) {
+        setProfileFromServer(serverProfile);
+      } else if (localProfile && !profileTableMissing) {
+        const differs =
+          !serverProfile ||
+          serverProfile.name !== localProfile.name ||
+          (serverProfile.goal ?? null) !== (localProfile.goal ?? null) ||
+          serverProfile.joinedAt !== localProfile.joinedAt;
+        if (differs) enqueue({ t: "profile_upsert", profile: localProfile });
+      }
 
       // ---- push (서버 ← 로컬 전용분) ----
       const serverIds = new Set(serverHabits.map((h) => h.id));

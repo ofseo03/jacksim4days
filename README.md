@@ -63,7 +63,7 @@ npm run lint    # ESLint
 ## Supabase 동기화 켜기 (선택)
 
 1. [supabase.com](https://supabase.com)에서 프로젝트 생성
-2. SQL Editor에서 `supabase/migrations/0001_init.sql` 실행
+2. SQL Editor에서 `supabase/migrations/` 아래 SQL을 번호 순서대로 실행
 3. **Authentication → Sign In / Up → Allow anonymous sign-ins** 활성화
 4. `.env.local`에 키 입력 (`.env.example` 참고):
 
@@ -111,6 +111,8 @@ SUPABASE_SERVICE_ROLE_KEY=...   # 서버 전용 — NEXT_PUBLIC_ 금지
 - 쓰기는 낙관적으로 로컬에 먼저 반영되고 큐(`src/lib/sync-queue.ts`)에 쌓여
   오프라인이어도 유실 없이, 재연결 시 자동으로 서버에 반영됩니다.
 - 기존 localStorage 사용자는 첫 로그인 때 기록이 자동으로 서버에 업로드됩니다(양방향 병합).
+- 프로필(이름·목표)도 `profiles` 테이블로 계정에 귀속됩니다 — 계정을 전환하면
+  그 계정의 프로필이 내려오고, 수정하면 즉시 서버에 반영됩니다.
 
 ## 페이지 구성
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { getSupabase } from "./supabase";
-import type { Habit } from "./types";
+import type { Habit, Profile } from "./types";
 
 /**
  * 오프라인 우선 동기화 큐.
@@ -14,7 +14,9 @@ export type SyncOp =
   | { t: "habit_upsert"; habit: HabitRow }
   | { t: "habit_delete"; id: string }
   | { t: "log_upsert"; habitId: string; date: string }
-  | { t: "log_delete"; habitId: string; date: string };
+  | { t: "log_delete"; habitId: string; date: string }
+  | { t: "profile_upsert"; profile: Profile }
+  | { t: "profile_delete" };
 
 export interface HabitRow {
   id: string;
@@ -141,6 +143,24 @@ export async function flush(): Promise<void> {
         }));
         const { error } = await supabase.from("habit_logs").upsert(rows);
         if (error) throw error;
+      } else if (head === "profile_upsert") {
+        // 유저당 한 행 — 배치의 마지막 상태만 반영하면 된다
+        const last = (batch as Extract<SyncOp, { t: "profile_upsert" }>[]).at(-1)!;
+        const { error } = await supabase.from("profiles").upsert({
+          user_id: userId,
+          name: last.profile.name,
+          goal: last.profile.goal ?? null,
+          joined_at: last.profile.joinedAt,
+          updated_at: new Date().toISOString(),
+        });
+        // 0002 마이그레이션 전 배포에는 테이블이 없다 — 큐를 막지 않고 버린다
+        if (error && error.code !== "42P01") throw error;
+      } else if (head === "profile_delete") {
+        const { error } = await supabase
+          .from("profiles")
+          .delete()
+          .eq("user_id", userId);
+        if (error && error.code !== "42P01") throw error;
       } else if (head === "log_delete") {
         for (const op of batch as Extract<SyncOp, { t: "log_delete" }>[]) {
           const { error } = await supabase
