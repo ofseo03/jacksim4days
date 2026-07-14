@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
   const fail = (message: string) => {
     const res = NextResponse.redirect(
-      `${origin}/profile?auth_error=${encodeURIComponent(message)}`
+      `${origin}/login?auth_error=${encodeURIComponent(message)}`
     );
     res.cookies.delete(NAVER_STATE_COOKIE);
     return res;
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
 
     const confirm = new URL(`${origin}/auth/confirm`);
     confirm.searchParams.set("token_hash", tokenHash);
-    confirm.searchParams.set("next", "/profile");
+    confirm.searchParams.set("next", "/login");
     const res = NextResponse.redirect(confirm);
     res.cookies.delete(NAVER_STATE_COOKIE);
     return res;

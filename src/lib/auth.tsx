@@ -162,7 +162,8 @@ export async function signInWithSocial(provider: SocialProvider): Promise<void> 
     return;
   }
 
-  const options = { redirectTo: `${window.location.origin}/profile` };
+  // 콜백은 /login으로 돌아온다 — 온보딩 여부에 따라 목적지를 정하는 단일 지점
+  const options = { redirectTo: `${window.location.origin}/login` };
   const {
     data: { session },
   } = await supabase.auth.getSession();

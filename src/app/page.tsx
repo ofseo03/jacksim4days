@@ -47,7 +47,7 @@ export default function LandingPage() {
             </Link>
             <ThemeToggle />
             <Link
-              href="/onboarding"
+              href="/login"
               className="hidden h-10 items-center rounded-full bg-foreground px-5 text-sm font-semibold text-background transition-transform duration-300 hover:scale-[1.02] sm:inline-flex"
             >
               시작하기
@@ -104,7 +104,7 @@ export default function LandingPage() {
           className="mt-12"
         >
           <Link
-            href="/onboarding"
+            href="/login"
             className="inline-flex h-14 items-center gap-2 rounded-full bg-foreground px-10 text-base font-semibold text-background shadow-[var(--shadow-lift)] transition-all duration-300 [transition-timing-function:var(--ease-apple)] hover:scale-[1.03] active:scale-[0.98]"
           >
             오늘 시작하기
@@ -290,10 +290,11 @@ export default function LandingPage() {
             작심사일입니다
           </h2>
           <p className="mt-5 text-lg text-muted">
-            가입 없이 바로 시작할 수 있습니다. 데이터는 당신의 기기에만 저장됩니다.
+            구글·카카오·네이버·애플 계정으로 간편하게 시작하세요. 기록은 계정에
+            안전하게 보관됩니다.
           </p>
           <Link
-            href="/onboarding"
+            href="/login"
             className="mt-10 inline-flex h-14 items-center gap-2 rounded-full bg-accent px-10 text-base font-semibold text-white shadow-[0_12px_32px_var(--accent-soft)] transition-all duration-300 [transition-timing-function:var(--ease-apple)] hover:scale-[1.03] hover:bg-accent-strong active:scale-[0.98]"
           >
             오늘 시작하기
