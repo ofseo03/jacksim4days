@@ -72,6 +72,35 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
 
+## 소셜 로그인 (구글 · 카카오 · 네이버 · 애플)
+
+프로필 페이지의 **계정** 카드에서 로그인합니다. 익명으로 쓰던 기록은 로그인
+순간 계정에 연결되고(`linkIdentity`), 다른 계정으로 전환하면 그 계정의 데이터만
+보입니다 — 데이터는 계정(`user_id`)별로 RLS로 격리됩니다.
+
+**구글 / 카카오 / 애플** — Supabase 기본 제공자:
+
+1. Supabase Dashboard → **Authentication → Sign In / Up → Auth Providers**에서
+   각 제공자 활성화 (각 개발자 콘솔에서 Client ID/Secret 발급)
+2. 익명 기록 승계를 위해 **Authentication → Sign In / Up →
+   Allow manual linking** 활성화
+3. Redirect URL 허용 목록에 배포 주소 추가
+
+**네이버** — Supabase가 지원하지 않아 커스텀 플로우로 동작합니다
+(`/api/auth/naver` → 네이버 OAuth → Supabase Admin이 유저 생성 →
+매직링크 토큰으로 세션 발급). [네이버 개발자 센터](https://developers.naver.com/apps)에서
+앱을 만들고 Callback URL을 `{배포주소}/api/auth/naver/callback`으로 지정한 뒤
+`.env.local`에 아래 키를 추가하세요:
+
+```bash
+NAVER_CLIENT_ID=...
+NAVER_CLIENT_SECRET=...
+SUPABASE_SERVICE_ROLE_KEY=...   # 서버 전용 — NEXT_PUBLIC_ 금지
+```
+
+> 네이버는 서버 라우트를 사용하므로 정적 호스팅이 아닌 Node 런타임(Vercel 등)이 필요합니다.
+> 네이버 로그인은 별도 유저로 생성되므로 익명 기록 승계 없이 **계정 전환**으로 처리됩니다.
+
 ### 동기화 설계
 
 - **`habit_logs`만이 진실**입니다. 재시작 횟수·복귀율·성공한 날은 컬럼으로 저장하지 않고

@@ -76,6 +76,14 @@ export function setSyncUser(id: string | null) {
   userId = id;
 }
 
+/** 계정 전환/로그아웃 시 이전 계정의 미전송 op를 폐기한다. */
+export function clearQueue() {
+  loadQueue();
+  queue = [];
+  persistQueue();
+  emit();
+}
+
 export function habitToRow(h: Habit): HabitRow {
   return {
     id: h.id,

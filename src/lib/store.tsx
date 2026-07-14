@@ -326,6 +326,27 @@ export function mergeServerHabits(server: Habit[]): void {
   });
 }
 
+/**
+ * 로컬 습관을 서버 상태로 통째로 교체한다.
+ * 다른 계정으로 로그인(계정 전환)했을 때 사용 — 이전 계정의 로컬 기록을
+ * 새 계정으로 밀어 올리지 않고, 로그인한 계정의 데이터만 보이게 한다.
+ */
+export function replaceServerHabits(server: Habit[]): void {
+  setState((s) => ({
+    ...s,
+    onboarded: s.onboarded || server.length > 0,
+    habits: server,
+  }));
+}
+
+/**
+ * 로그아웃 시 로컬 습관만 비운다 (설정·테마는 기기 설정이므로 유지).
+ * resetAll과 달리 서버 삭제 op를 만들지 않는다 — 데이터는 계정에 남는다.
+ */
+export function clearHabitsOnSignOut(): void {
+  setState((s) => ({ ...s, profile: null, habits: [] }));
+}
+
 /* ---------- React 바인딩 ---------- */
 
 export function HabitProvider({ children }: { children: ReactNode }) {

@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { PROVIDER_LABELS, useAuth } from "@/lib/auth";
 import { useHabits } from "@/lib/store";
 import { useSyncStatus } from "@/lib/sync";
 import { useTheme, type ThemeMode } from "@/lib/theme";
@@ -63,6 +64,7 @@ export default function SettingsPage() {
   const { state, updateSettings, loadDemoData, resetAll } = useHabits();
   const { mode, setMode } = useTheme();
   const sync = useSyncStatus();
+  const { user } = useAuth();
   const [confirmReset, setConfirmReset] = useState(false);
 
   const exportData = () => {
@@ -118,6 +120,12 @@ export default function SettingsPage() {
         {(() => {
           const meta = SYNC_LABELS[sync.mode];
           const Icon = meta.icon;
+          const desc =
+            sync.mode === "online" && user && !user.isAnonymous
+              ? `${
+                  user.provider ? `${PROVIDER_LABELS[user.provider]} ` : ""
+                }계정(${user.email ?? user.name ?? "로그인됨"})으로 서버에 안전하게 백업되고 있어요.`
+              : meta.desc;
           return (
             <>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-surface">
@@ -134,7 +142,7 @@ export default function SettingsPage() {
               <div className="flex-1">
                 <p className="font-semibold">{meta.title}</p>
                 <p className="text-sm text-muted">
-                  {meta.desc}
+                  {desc}
                   {sync.pending > 0 && ` (대기 중 ${sync.pending}건)`}
                 </p>
               </div>
