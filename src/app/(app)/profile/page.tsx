@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Pencil } from "lucide-react";
+import { AccountCard } from "@/components/account-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -160,6 +161,15 @@ export default function ProfilePage() {
             </div>
           </div>
         </Card>
+      </motion.div>
+
+      {/* 계정 (소셜 로그인) */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.08, ease: EASE }}
+      >
+        <AccountCard />
       </motion.div>
 
       {/* 배지 */}

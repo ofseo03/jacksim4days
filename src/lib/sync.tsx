@@ -3,6 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { getSupabase } from "./supabase";
 import {
+  clearQueue,
   enqueue,
   flush,
   habitToRow,
@@ -13,26 +14,64 @@ import {
   syncStatusStore,
   type SyncOp,
 } from "./sync-queue";
-import { ensureUuidIds, getStoreState, hydrateStore, mergeServerHabits } from "./store";
-import type { Habit, HabitCategory } from "./types";
+import {
+  clearHabitsOnSignOut,
+  ensureUuidIds,
+  getStoreState,
+  hydrateStore,
+  mergeServerHabits,
+  replaceServerHabits,
+  setProfileFromServer,
+} from "./store";
+import type { Habit, HabitCategory, Profile } from "./types";
 import { useSyncExternalStore } from "react";
 
 let started = false;
+/** 현재 동기화 중인 auth 유저. 계정 전환 감지에 쓴다. */
+let activeUid: string | null = null;
+let initializing = false;
+
+/** 마지막으로 동기화한 유저 ID — 재방문 시 계정 전환 여부를 판별한다. */
+const UID_KEY = "jaksim4.sync.uid.v1";
+
+function getStoredUid(): string | null {
+  try {
+    return localStorage.getItem(UID_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function setStoredUid(uid: string | null) {
+  try {
+    if (uid) localStorage.setItem(UID_KEY, uid);
+    else localStorage.removeItem(UID_KEY);
+  } catch {
+    // ignore
+  }
+}
 
 /**
- * 부팅 시 1회:
- * 1. 익명 로그인(세션 없으면) — 회원가입 벽 없이 바로 시작, 나중에 계정 연결 가능
+ * 부팅/로그인 시:
+ * 1. 익명 로그인(세션 없으면) — 회원가입 벽 없이 바로 시작, 나중에 소셜 계정 연결 가능
  * 2. 구버전 로컬 ID → UUID 마이그레이션
- * 3. 서버 상태 pull & 로컬 병합 (완료 기록은 합집합)
- * 4. 로컬에만 있는 습관/기록을 서버로 push (멱등 upsert)
+ * 3. 계정이 바뀌었으면(다른 소셜 계정으로 로그인) 로컬을 그 계정의 서버 상태로 교체
+ *    같은 계정이면 서버 pull & 로컬 병합 후 로컬 전용분을 push (멱등 upsert)
+ *
+ * 익명 → 소셜 "연결"(linkIdentity)은 user_id가 유지되므로 병합 경로를 타고,
+ * 기존 기록이 그대로 소셜 계정의 것이 된다.
  */
 async function initSync(): Promise<void> {
+  if (initializing) return;
+  initializing = true;
+
   // 병합 전에 로컬 상태가 반드시 로드되어 있어야 한다 (빈 상태 덮어쓰기 방지)
   hydrateStore();
 
   const supabase = getSupabase();
   if (!supabase) {
     setSyncMode("disabled");
+    initializing = false;
     return;
   }
   setSyncMode("connecting");
@@ -47,21 +86,46 @@ async function initSync(): Promise<void> {
       session = data.session;
     }
     if (!session) throw new Error("세션을 만들지 못했습니다");
-    setSyncUser(session.user.id);
+
+    const uid = session.user.id;
+    const switched = activeUid !== null ? activeUid !== uid : (() => {
+      const prev = getStoredUid();
+      return prev !== null && prev !== uid;
+    })();
+    activeUid = uid;
+    setSyncUser(uid);
+    setStoredUid(uid);
+
+    // 계정이 바뀌었으면 이전 계정용 미전송 op는 폐기한다 (RLS 위반/데이터 섞임 방지)
+    if (switched) clearQueue();
 
     // 로컬 정리: 서버 push 전에 ID를 uuid로 통일
     ensureUuidIds();
 
     // ---- pull ----
-    const [{ data: habitRows, error: hErr }, { data: logRows, error: lErr }] =
-      await Promise.all([
-        supabase
-          .from("habits")
-          .select("id,name,emoji,category,created_at,archived_at"),
-        supabase.from("habit_logs").select("habit_id,log_date"),
-      ]);
+    const [
+      { data: habitRows, error: hErr },
+      { data: logRows, error: lErr },
+      profilePull,
+    ] = await Promise.all([
+      supabase
+        .from("habits")
+        .select("id,name,emoji,category,created_at,archived_at"),
+      supabase.from("habit_logs").select("habit_id,log_date"),
+      supabase.from("profiles").select("name,goal,joined_at").maybeSingle(),
+    ]);
     if (hErr) throw hErr;
     if (lErr) throw lErr;
+    // 프로필은 0002 마이그레이션 전 배포에 테이블이 없을 수 있어 비치명 처리
+    const serverProfile: Profile | null =
+      !profilePull.error && profilePull.data
+        ? {
+            name: profilePull.data.name,
+            goal: profilePull.data.goal ?? undefined,
+            joinedAt: String(profilePull.data.joined_at).slice(0, 10),
+          }
+        : null;
+    const profileTableMissing = profilePull.error?.code === "42P01";
 
     const logsByHabit = new Map<string, string[]>();
     for (const row of logRows ?? []) {
@@ -79,41 +143,85 @@ async function initSync(): Promise<void> {
       completions: logsByHabit.get(r.id) ?? [],
     }));
 
-    // ---- merge (로컬 ← 서버) ----
-    mergeServerHabits(serverHabits);
+    if (switched) {
+      // ---- 계정 전환: 로그인한 계정의 데이터만 보여준다 ----
+      // 이전 계정의 로컬 기록은 그 계정(서버)에 이미 안전하게 남아 있다.
+      replaceServerHabits(serverHabits);
+      setProfileFromServer(serverProfile);
+    } else {
+      // ---- merge (로컬 ← 서버) ----
+      mergeServerHabits(serverHabits);
 
-    // ---- push (서버 ← 로컬 전용분) ----
-    const serverIds = new Set(serverHabits.map((h) => h.id));
-    const serverLogs = new Set(
-      (logRows ?? []).map((r) => `${r.habit_id}|${r.log_date}`)
-    );
-    const ops: SyncOp[] = [];
-    for (const h of getStoreState().habits) {
-      if (!serverIds.has(h.id)) {
-        ops.push({ t: "habit_upsert", habit: habitToRow(h) });
+      // 프로필: 로컬 우선 (습관 메타와 동일한 정책)
+      const localProfile = getStoreState().profile;
+      if (!localProfile && serverProfile) {
+        setProfileFromServer(serverProfile);
+      } else if (localProfile && !profileTableMissing) {
+        const differs =
+          !serverProfile ||
+          serverProfile.name !== localProfile.name ||
+          (serverProfile.goal ?? null) !== (localProfile.goal ?? null) ||
+          serverProfile.joinedAt !== localProfile.joinedAt;
+        if (differs) enqueue({ t: "profile_upsert", profile: localProfile });
       }
-      for (const d of h.completions) {
-        if (!serverLogs.has(`${h.id}|${d}`)) {
-          ops.push({ t: "log_upsert", habitId: h.id, date: d });
+
+      // ---- push (서버 ← 로컬 전용분) ----
+      const serverIds = new Set(serverHabits.map((h) => h.id));
+      const serverLogs = new Set(
+        (logRows ?? []).map((r) => `${r.habit_id}|${r.log_date}`)
+      );
+      const ops: SyncOp[] = [];
+      for (const h of getStoreState().habits) {
+        if (!serverIds.has(h.id)) {
+          ops.push({ t: "habit_upsert", habit: habitToRow(h) });
+        }
+        for (const d of h.completions) {
+          if (!serverLogs.has(`${h.id}|${d}`)) {
+            ops.push({ t: "log_upsert", habitId: h.id, date: d });
+          }
         }
       }
+      if (ops.length > 0) enqueue(...ops);
     }
-    if (ops.length > 0) enqueue(...ops);
 
     setSyncMode("online");
+    initializing = false;
     void flush();
   } catch (e) {
+    initializing = false;
     const offline = typeof navigator !== "undefined" && !navigator.onLine;
     setSyncMode(offline ? "offline" : "error", e instanceof Error ? e.message : String(e));
   }
 }
 
-/** 재연결·주기 flush를 관장하는 클라이언트 프로바이더 */
+/** 재연결·주기 flush와 로그인/로그아웃에 따른 재동기화를 관장하는 프로바이더 */
 export function SyncProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (started) return;
     started = true;
     void initSync();
+
+    // 소셜 로그인/로그아웃에 반응해 계정별 데이터를 다시 맞춘다
+    const supabase = getSupabase();
+    const sub = supabase?.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        // 기록은 서버(방금 로그아웃한 계정)에 남는다. 기기에서는 비우고
+        // 새 익명 세션으로 다시 시작한다.
+        activeUid = null;
+        setSyncUser(null);
+        setStoredUid(null);
+        clearQueue();
+        clearHabitsOnSignOut();
+        void initSync();
+      } else if (
+        (event === "SIGNED_IN" || event === "USER_UPDATED") &&
+        session &&
+        session.user.id !== activeUid &&
+        !initializing
+      ) {
+        void initSync();
+      }
+    });
 
     const onOnline = () => {
       setSyncMode("connecting");
@@ -124,6 +232,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener("online", onOnline);
       clearInterval(interval);
+      sub?.data.subscription.unsubscribe();
     };
   }, []);
 
